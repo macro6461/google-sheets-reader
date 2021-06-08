@@ -1,11 +1,14 @@
 import {useEffect, useState} from 'react';
-import GSheetReader from "g-sheets-api";
+import GSheetReader from 'g-sheets-api';
+
+var nums = /[0-9]/
+var letters = /[A-Za-z]/
 
 const GoogleSheetReader = () => {
 
     const [results, setResults] = useState([]) 
     const [filters, setFilters] = useState({}) 
-    const [sortBy, setSortBy] = useState({by: '', dir: true}) 
+    const [sortBy, setSortBy] = useState({by: '', dir: true})
     const [filterEls, setFilterEls] = useState([]) 
 
     useEffect(()=>{
@@ -48,11 +51,24 @@ const GoogleSheetReader = () => {
       }
     }
 
-    const onSort = (key, dir) =>{
+    const onSort = (key, direction) => {
       var sorter = {...sortBy}
-      sorter['by'] = key
-      sorter['dir'] = dir
-      
+      const {by, dir} = sorter
+      sorter['by'] = by === key && dir === direction ? '' : key
+      sorter['dir'] = direction
+      setSortBy(sorter)
+    }
+
+    const evalSortType = (val) =>{
+      const {by} = sortBy
+        if (by.toLowerCase().indexOf('date') > -1){
+          var x = Date.parse(val[by])
+          return new Date(x);
+        } else if (val[by].match(/[0-9]/) && !val[by].match(/[A-Za-z]/)){
+          return Number(val[by].replace(/[^0-9.-]+/g,""))
+        } else {
+          return val[by]
+        }
     }
 
     var finalResults = results.filter(x=>{
@@ -64,6 +80,20 @@ const GoogleSheetReader = () => {
       }
       return returnItem
     })
+
+    const {dir, by} = sortBy
+
+    if (by.length > 0){
+      finalResults = finalResults.sort((a, b)=>{
+        var aVal = a[by] ? evalSortType(a) : null
+        var bVal = b[by] ? evalSortType(b) : null
+        if (dir){
+          return aVal > bVal ? 1 : -1
+        } else {
+          return aVal > bVal ? -1 : 1
+        }
+      })
+    }
 
     return (<div>
       <div style={{textAlign: 'left'}}>
@@ -79,8 +109,14 @@ const GoogleSheetReader = () => {
              <div>
              {header}
              <div className="chevronContainer">
-              <span className="chevron top"/>
-              <span className="chevron bottom"/>
+              <span className="chevron top" 
+                onClick={()=>onSort(header, true)} 
+                style={{color: sortBy.by === header && sortBy.dir ? 'blue' : ''}}
+              />
+              <span className="chevron bottom" 
+                onClick={()=>onSort(header, false)} 
+                style={{color: sortBy.by === header && !sortBy.dir ? 'blue' : ''}}
+              />
              </div>
              </div>
             </td>
