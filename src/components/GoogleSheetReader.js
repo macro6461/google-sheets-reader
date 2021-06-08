@@ -78,7 +78,7 @@ const GoogleSheetReader = () => {
       return returnItem
     })
 
-    if (by.length > 0){
+    if (sortBy.by.length > 0){
       const {dir, by} = sortBy
       finalResults = finalResults.sort((a, b)=>{
         var aVal = a[by] ? evalSortType(a) : null
