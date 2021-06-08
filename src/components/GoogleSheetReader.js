@@ -1,9 +1,6 @@
 import {useEffect, useState} from 'react';
 import GSheetReader from 'g-sheets-api';
 
-var nums = /[0-9]/
-var letters = /[A-Za-z]/
-
 const GoogleSheetReader = () => {
 
     const [results, setResults] = useState([]) 
